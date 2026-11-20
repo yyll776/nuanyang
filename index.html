@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>暖阳 · 老年人智能伴侣原型</title>
+<style>
+:root{
+  --bg:#FFF4E6; --card:#FFFFFF; --ink:#3A2E24; --sub:#8A7A68;
+  --pri:#E27832; --pri-d:#C05F1F; --ok:#4E9A63; --danger:#D6483F;
+  --acc:#E8A13D; --line:#F0E2CE;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;font-family:system-ui,"PingFang SC","Microsoft YaHei",sans-serif}
+body{background:linear-gradient(160deg,#FFE8C8,#FFF4E6);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px;color:var(--ink)}
+.hint{font-size:14px;color:#6B7280;text-align:center;line-height:1.7}
+.phone{position:relative;width:400px;max-width:96vw;height:790px;max-height:92vh;background:var(--bg);border-radius:46px;box-shadow:0 24px 60px rgba(180,110,60,.28);overflow:hidden;border:9px solid #2E3140}
+.statusbar{height:34px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;font-size:14px;font-weight:800}
+.topbar{min-height:56px;display:flex;align-items:center;padding:8px 14px;gap:10px}
+.topbar .back{min-height:46px;padding:0 16px;border-radius:14px;background:#fff;border:none;font-size:19px;font-weight:800;box-shadow:0 4px 10px rgba(180,110,60,.12);cursor:pointer;color:var(--pri-d)}
+.topbar .ttl{font-size:23px;font-weight:900;flex:1}
+.topbar .chip{background:#fff;border-radius:12px;padding:8px 13px;font-size:15px;font-weight:800;box-shadow:0 4px 10px rgba(180,110,60,.10)}
+.screen{position:absolute;top:34px;left:0;right:0;bottom:0;display:none;flex-direction:column;padding-bottom:24px;overflow-y:auto;scrollbar-width:none}
+.screen::-webkit-scrollbar{display:none}
+.screen.active{display:flex}
+.body{padding:12px 20px 24px;display:flex;flex-direction:column;gap:16px;flex:1}
+.card{background:var(--card);border-radius:20px;padding:20px;box-shadow:0 6px 16px rgba(180,110,60,.10)}
+.bigbtn{background:var(--pri);color:#fff;font-size:22px;font-weight:900;border-radius:18px;padding:18px;border:none;width:100%;cursor:pointer;box-shadow:0 8px 18px rgba(226,120,50,.35);line-height:1.4}
+.bigbtn:active{transform:scale(.97)}
+.bigbtn.r{background:var(--danger);box-shadow:0 8px 18px rgba(214,72,63,.4)}
+.bigbtn.g{background:var(--ok);box-shadow:0 8px 18px rgba(78,154,99,.4)}
+.ghost{background:#fff;color:var(--pri-d);border:3px solid var(--pri);border-radius:18px;padding:14px;font-size:20px;font-weight:900;width:100%;cursor:pointer;line-height:1.4}
+.ghost.r{color:var(--danger);border-color:var(--danger)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.gcard{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:#fff;border-radius:22px;padding:20px 10px;box-shadow:0 6px 14px rgba(180,110,60,.12);cursor:pointer;border:none;text-align:center;min-height:128px}
+.gcard:active{transform:scale(.97)}
+.gcard .ic{width:60px;height:60px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:32px}
+.gcard .t{font-size:21px;font-weight:900}
+.gcard .d{font-size:13px;color:var(--sub)}
+.ic1{background:#FDEBDD}.ic2{background:#E7F3EA}.ic3{background:#FBE3E0}.ic4{background:#E9EFFB}.ic5{background:#FBF3DC}
+.item{display:flex;align-items:center;gap:14px;background:#fff;border-radius:18px;padding:16px;box-shadow:0 5px 12px rgba(180,110,60,.10);cursor:pointer;border:none;width:100%;text-align:left}
+.item .ic{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0}
+.item .t{font-size:21px;font-weight:900}
+.item .d{font-size:16px;color:var(--sub);margin-top:3px}
+.item .rt{font-size:22px;color:var(--sub);margin-left:auto}
+.inp{width:100%;border:3px solid var(--line);border-radius:16px;padding:16px;font-size:20px;font-weight:700;background:#fff}
+.lbl{font-size:19px;font-weight:900;margin-bottom:6px}
+.chips{display:flex;flex-wrap:wrap;gap:12px}
+.chip{background:#fff;border:3px solid transparent;border-radius:999px;padding:13px 20px;font-size:19px;font-weight:800;cursor:pointer;box-shadow:0 4px 10px rgba(180,110,60,.10)}
+.chip.sel{border-color:var(--pri);background:#FDEBDD;color:var(--pri-d)}
+.fb{text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px;padding:26px 0}
+.fb .big{font-size:80px;animation:pop .5s}
+.fb .tt{font-size:26px;font-weight:900}
+.fb .d{font-size:18px;color:var(--sub);line-height:1.8}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.pad button{background:#fff;border:none;border-radius:16px;padding:14px;font-size:26px;font-weight:900;cursor:pointer;box-shadow:0 4px 10px rgba(180,110,60,.10)}
+.pad button:active{background:#FDEBDD}
+.pad button.del{color:var(--danger)}
+.pad button.ok{background:var(--pri);color:#fff}
+.bubble{position:absolute;left:50%;transform:translateX(-50%);bottom:120px;background:#fff;border:3px solid var(--acc);border-radius:20px;padding:14px 18px;font-weight:900;font-size:18px;box-shadow:0 12px 30px rgba(180,110,60,.3);z-index:60;opacity:0;transition:.3s;max-width:86%;text-align:center;pointer-events:none}
+.bubble.show{opacity:1;bottom:140px}
+.sos{width:200px;height:200px;border-radius:50%;background:conic-gradient(var(--danger) calc(var(--p)*1%), #F5D8D5 0);display:flex;align-items:center;justify-content:center;position:relative;border:none;cursor:pointer;margin:0 auto}
+.sos::before{content:"";position:absolute;inset:16px;background:#fff;border-radius:50%}
+.sos span{position:relative;font-size:52px}
+.mic{width:130px;height:130px;border-radius:50%;background:var(--pri);color:#fff;font-size:54px;border:none;cursor:pointer;box-shadow:0 14px 30px rgba(226,120,50,.45);display:flex;align-items:center;justify-content:center;margin:0 auto}
+.mic:active{transform:scale(.93)}
+.wave{display:flex;gap:10px;justify-content:center;align-items:center;height:70px}
+.wave i{width:14px;height:14px;border-radius:50%;background:var(--pri);animation:bounce 1s infinite}
+.wave i:nth-child(2){animation-delay:.2s}
+.wave i:nth-child(3){animation-delay:.4s}
+@keyframes bounce{0%,100%{transform:translateY(0);opacity:.5}50%{transform:translateY(-22px);opacity:1}}
+@keyframes pop{0%{transform:scale(.6)}70%{transform:scale(1.08)}100%{transform:scale(1)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+.kv{display:flex;gap:12px;padding:12px 0;border-bottom:2px solid var(--line);font-size:19px}
+.kv:last-child{border-bottom:none}
+.kv .k{color:var(--sub);width:96px;flex-shrink:0;font-weight:700}
+.kv .v{font-weight:900;flex:1}
+</style>
+</head>
+<body>
+<div class="hint">暖阳 · 老年人智能伴侣原型演示<br>点击手机里的按钮即可交互(字号可在"设置"里调大)</div>
+<div class="phone" id="phone">
+  <div class="statusbar"><span id="sbTime">--:--</span><span>📶 🔋</span></div>
+
+  <!-- 1 欢迎页 -->
+  <section class="screen active" id="s-welcome" data-back="0">
+    <div class="body" style="align-items:center;justify-content:center;gap:26px;text-align:center">
+      <div style="font-size:80px">🌅</div>
+      <div style="font-size:32px;font-weight:900">暖阳</div>
+      <div style="font-size:19px;color:var(--sub);line-height:1.9">大字 · 大按钮 · 简单好懂<br>记健康 · 管吃药 · 一键求助 · 陪您说话</div>
+      <button class="bigbtn" style="width:86%" onclick="go('home')">开始使用</button>
+    </div>
+  </section>
+
+  <!-- 2 首页 -->
+  <section class="screen" id="s-home" data-back="0">
+    <div class="body">
+      <div class="card" style="display:flex;align-items:center;gap:14px">
+        <div style="font-size:42px">🌤️</div>
+        <div style="flex:1">
+          <div style="font-size:22px;font-weight:900" id="greet">您好!</div>
+          <div style="font-size:17px;color:var(--sub);margin-top:4px">西安 · 晴 8°C,今天天气不错</div>
+        </div>
+      </div>
+      <div class="grid2">
+        <button class="gcard" onclick="go('health')"><span class="ic ic1">❤️</span><span class="t">健康记录</span><span class="d">血压记一记</span></button>
+        <button class="gcard" onclick="go('medbox')"><span class="ic ic2">💊</span><span class="t">吃药提醒</span><span class="d">早中晚打卡</span></button>
+        <button class="gcard" onclick="go('sos')"><span class="ic ic3">🆘</span><span class="t">一键求助</span><span class="d">长按呼叫家人</span></button>
+        <button class="gcard" onclick="go('voice')"><span class="ic ic4">🎤</span><span class="t">语音陪伴</span><span class="d">查天气问健康</span></button>
+      </div>
+      <button class="item" onclick="go('read')"><span class="ic ic5">📰</span><span><span class="t">大字阅读</span><div class="d">健康小知识,字大看得清</div></span><span class="rt">›</span></button>
+      <div style="display:flex;gap:12px">
+        <button class="ghost" style="flex:1" onclick="go('set')">⚙️ 设置</button>
+        <button class="ghost" style="flex:1" onclick="go('about')">ℹ️ 关于</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 健康记录·今日概况 -->
+  <section class="screen" id="s-health" data-back="1">
+    <div class="topbar"><button class="back" onclick="back()">‹ 返回</button><div class="ttl">❤️ 健康记录</div></div>
+    <div class="body">
+      <div class="card" style="text-align:center" id="bpToday">
+        <div style="font-size:18px;color:var(--sub)">最近一次血压</div>
+        <div style="font-size:44px;font-weight:900;margin:8px 0" id="bpVal">128 / 82</div>
+        <span class="chip sel" id="bpStatus" style="font-size:17px">正常</span>
+        <div style="font-size:15px;color:var(--sub);margin-top:8px" id="bpDate">今天 07:30 记录</div>
+      </div>
+      <div class="card" style="display:flex;justify-content:space-around;text-align:center">
+        <div><div style="font-size:13px;color:var(--sub)">累计记录</div><div style="font-size:26px;font-weight:900" id="bpCount">0 次</div></div>
+        <div><div style="font-size:13px;color:var(--sub)">血压情况</div><div style="font-size:26px;font-weight:900">正常范围</div></div>
+      </div>
+      <button class="bigbtn" onclick="startBp()">➕ 记录血压</button>
+      <button class="ghost" onclick="go('health-list')">📋 查看历史记录</button>
+    </div>
+  </section>
+
+  <!-- 4 健康记录·录入 -->
+  <section class="screen" id="s-health-input" data-back="1">
+    <div class="topbar"><button class="back" onclick="back()">‹ 返回</button><div class="ttl">记录血压</div><span class="chip" id="bpStep">高压</span></div>
+    <div class="body" style="justify-content:center;gap:12px">
+      <div class="card" style="text-align:center">
+        <div style="font-size:18px;color:var(--sub)" id="bpStepLabel">请输入高压(收缩压)</div>
+        <div style="font-size:52px;font-weight:900;height:64px" id="bpInput">--</div>
+      </div>
+      <div class="pad">
+        <button onclick="bpKey('1')">1</button><button onclick="bpKey('2')">2</button><button onclick="bpKey('3')">3</button>
+        <button onclick="bpKey('4')">4</button><button onclick="bpKey('5')">5</button><button onclick="bpKey('6')">6</button>
+        <button onclick="bpKey('7')">7</button><button onclick="bpKey('8')">8</button><button onclick="bpKey('9')">9</button>
+        <button onclick="bpKey('⌫')">⌫</button><button onclick="bpKey('0')">0</button><button class="ok" onclick="bpOk()">确定</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 健康记录·保存成功 -->
+  <section class="screen" id="s-health-done" data-back="0">
+    <div class="body" style="justify-content:center">
+      <div class="fb">
+        <div class="big">✅</div>
+        <div class="tt">保存成功!</div>
+        <div class="card" style="width:100%;text-align:left;font-size:19px;line-height:2.1" id="bpDoneSum"></div>
+        <button class="bigbtn" onclick="goHealthList()">查看历史记录</button>
+        <button class="ghost" onclick="tabHome()">返回首页</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 健康记录·历史列表 -->
+  <section class="screen" id="s-health-list" data-back="1">
+    <div class="topbar"><button class="back" onclick="back()">‹ 返回</button><div class="ttl">血压历史</div><span class="chip" id="listCnt">0 条</span></div>
+    <div class="body">
+      <div id="bpItems" style="display:flex;flex-direction:column;gap:12px"></div>
+      <button class="bigbtn" onclick="startBp()">➕ 记录血压</button>
+    </div>
+  </section>
+
+  <!-- 7 吃药提醒·药盒 -->
+  <section class="screen" id="s-medbox" data-back="1">
+    <div class="topbar"><button class="back" onclick="back()">‹ 返回</button><div class="ttl">💊 吃药提醒</div><span class="chip" id="medCount">0/3</span></div>
+    <div class="body">
+      <div class="card" style="font-size:18px;font-weight:800;line-height:1.8">到点会有大铃铛提醒您。吃过了就点一下格子,打上勾就不会忘。</div>
+      <button class="item" id="med0" onclick="tapMed(0)"><span class="ic ic2">🌅</span><span><span class="t">早上 · 8:00</span><div class="d">降压药 · 1 片</div></span><span class="rt" id="medRt0">☐</span></button>
+      <button class="item" id="med1" onclick="tapMed(1)"><span class="ic ic1">☀️</span><span><span class="t">中午 · 12:00</span><div class="d">钙片 · 1 粒</div></span><span class="rt" id="medRt1">☐</span></button>
+      <button class="item" id="med2" onclick="tapMed(2)"><span class="ic ic4">🌙</span><span><span class="t">晚上 · 20:00</span><div class="d">降脂药 · 1 片</div></span><span class="rt" id="medRt2">☐</span></button>
+      <button class="bigbtn o" style="background:var(--acc);box-shadow:0 8px 18px rgba(232,161,61,.4)" onclick="go('med-alarm')">🔔 演示到点提醒</button>
+    </div>
+  </section>
+
+  <!-- 8 吃药提醒·打卡成功 -->
+  <section class="screen" id="s-med-done" data-back="0">
+    <div class="body" style="justify-content:center">
+      <div class="fb">
+        <div class="big">✅</div>
+        <div class="tt" id="medDoneTt">打卡成功!</div>
+        <div class="card" style="width:100%;text-align:center;font-size:19px;line-height:2" id="medDoneSum"></div>
+        <button class="bigbtn" onclick="back()">知道了</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9 吃药提醒·到点提醒演示 -->
+  <section class="screen" id="s-med-alarm" data-back="0">
+    <div class="body" style="justify-content:center;text-align:center;gap:20px">
+      <div style="font-size:80px;animation:pop .5s">🔔</div>
+      <div style="font-size:28px;font-weight:900">到点提醒!</div>
+      <div class="card" style="font-size:22px;font-weight:900;line-height:2">现在是早上 8:00<br>该吃「降压药」啦,一次 1 片</div>
+      <div style="font-size:16px;color:var(--sub)">吃过药后,记得回药盒里打勾哦</div>
+      <button class="bigbtn" onclick="back()">我知道了</button>
+    </div>
+  </section>
+
+  <!-- 10 一键求助·长按 -->
+  <section class="screen" id="s-sos" data-back="1">
+    <div class="topbar"><button class="back" onclick="back()">‹ 返回</button><div class="ttl">🆘 一键求助</div></div>
+    <div class="body" style="justify-content:center;text-align:center;gap:22px">
+      <div style="font-size:24px;font-weight:900">按住大红按钮 3 秒</div>
+      <button class="sos" id="sosBtn" style="--p:0"
+        onmousedown="sosDown()" onmouseup="sosUp()" onmouseleave="sosUp()"
+        ontouchstart="sosDown()" ontouchend="sosUp()" ontouchcancel="sosUp()"><span>🆘</span></button>
+      <div style="font-size:18px;color:var(--sub);line-height:1.8">松手就会取消。<br>只有按住 3 秒,才会向家人求助,<br>防止不小心碰到。</div>
+    </div>
+  </section>
+
+  <!-- 11 一键求助·二次确认 -->
+  <section class="screen" id="s-sos-confirm" data-back="0">
+    <div class="body" style="justify-content:center;text-align:center;gap:18px">
+      <div style="font-size:64px">⚠️</div>
+      <div style="font-size:26px;font-weight:900">确定要向家人求助吗?</div>
+      <div class="card" style="font-size:21px;font-weight:900" id="sosContact"></div>
+      <div style="font-size:16px;color:var(--sub)">确认后将联系您的紧急联系人</div>
+      <button class="bigbtn r" onclick="sosGo()">📢 确认求助</button>
+      <button class="ghost" onclick="back()">取消,我不需要</button>
+    </div>
+  </section>
+
+  <!-- 12 一键求助·求助中 -->
+  <section class="screen" id="s-sos-active" data-back="0">
+    <div class="body" style="justify-content:center;text-align:center;gap:18px">
+      <div style="font-size:60px">📢</div>
+      <div style="font-size:26px;font-weight:900">正在联系家人…</div>
+      <div class="card" style="font-size:21px;font-weight:900" id="sosActiveContact"></div>
+      <div style="font-size:30px;font-weight:900" id="sosSec">00</div>
+      <div style="font-size:16px;color:var(--sub)">请保持手机在身边,家人马上回复您</div>
+      <button class="bigbtn r" onclick="sosCancel()">取消求助</button>
+    </div>
+  </section>
+
+  <!-- 13 紧急联系人 -->
+  <section class="screen" id="s-contact" data-back="1">
+    <div class="topbar"><button class="back" onclick="back()">‹ 返回</button><div class="ttl">紧急联系人</div></div>
+    <div class="body">
+      <div class="card" style="font-size:17px;font-weight:800;line-height:1.8">遇到急事按「一键求助」时,就会联系下面这些人。建议子女帮您提前设好。</div>
+      <div id="ctItems" style="display:flex;flex-direction:column;gap:12px"></div>
+      <button class="bigbtn" onclick="go('contact-add')">➕ 添加联系人</button>
+    </div>
+  </section>
+
+  <!-- 14 添加联系人 -->
+  <section class="screen" id="s-contact-add" data-back="1">
+    <div class="topbar"><button class="back" onclick="back()">‹ 返回</button><div class="ttl">添加联系人</div></div>
+    <div class="body">
+      <div><div class="lbl">姓名</div><input class="inp" id="ctName" placeholder="例如:王丽"></div>
+      <div><div class="lbl">关系</div><input class="inp" id="ctRel" placeholder="例如:女儿"></div>
+      <div><div class="lbl">电话号码</div><input class="inp" id="ctTel" placeholder="例如:13800000000"></div>
+      <button class="bigbtn" onclick="saveContact()">💾 保存联系人</button>
+    </div>
+  </section>
+
+  <!-- 15 语音陪伴·首页 -->
+  <section class="screen" id="s-voice" data-back="1">
+    <div class="topbar"><button class="back" onclick="back()">‹ 返回</button><div class="ttl">🎤 语音陪伴</div></div>
+    <div class="body" style="justify-content:center;gap:26px;text-align:center">
+      <div style="font-size:24px;font-weight:900">按住说话,或点下面的问题</div>
+      <button class="mic" onclick="listen('weather')">🎤</button>
+      <div style="font-size:16px;color:var(--sub)">不会打字也没关系,<br>对着话筒说话就行</div>
+      <button class="bigbtn" onclick="listen('weather')">☀️ 今天天气怎么样?</button>
+      <button class="bigbtn g" onclick="listen('tips')">💊 给我讲讲健康小知识</button>
+    </div>
+  </section>
+
+  <!-- 16 语音·聆听等待 -->
+  <section class="screen" id="s-voice-listen" data-back="0">
+    <div class="body" style="justify-content:center;gap:30px;text-align:center">
+      <div style="font-size:26px;font-weight:900" id="listenTxt">正在聆听您的语音…</div>
+      <div class="wave"><i></i><i></i><i></i></div>
+      <div style="font-size:18px;color:var(--sub)">请对着手机说话</div>
+    </div>
+  </section>
+
+  <!-- 17 语音·天气结果 -->
+  <section class="screen" id="s-voice-weather" data-back="1">
+    <div class="topbar"><button class="back" onclick="backHome()">‹ 返回</button><div class="ttl">今日天气</div></div>
+    <div class="body" style="justify-content:center;text-align:center;gap:14px">
+      <div style="font-size:24px;font-weight:900">西安市 今天</div>
+      <div style="font-size:76px">☀️</div>
+      <div style="font-size:54px;font-weight:900">8°C</div>
+      <div style="font-size:22px;font-weight:800">晴</div>
+      <div class="card" style="font-size:18px;font-weight:800;line-height:2">风力 2 级 · 湿度 45%<br>气温 2°C ~ 8°C,早晚很冷,出门多穿点</div>
+      <div style="font-size:16px;color:var(--sub)">🔊 已为您语音播报</div>
+      <button class="bigbtn" onclick="backHome()">返回首页</button>
+    </div>
+  </section>
+
+  <!-- 18 语音·健康小知识 -->
+  <section class="screen" id="s-voice-tips" data-back="1">
+    <div class="topbar"><button class="back" onclick="backHome()">‹ 返回</button><div class="ttl">健康小知识</div></div>
+    <div class="body">
+      <div style="font-size:21px;font-weight:900">今天为您讲这几个健康小知识</div>
+      <button class="item" onclick="playTip(this)"><span class="ic ic2">💧</span><span><span class="t">每天喝够 6 杯水</span><div class="d">点击听语音讲解</div></span></button>
+      <button class="item" onclick="playTip(this)"><span class="ic ic1">🚶</span><span><span class="t">饭后慢走 20 分钟</span><div class="d">点击听语音讲解</div></span></button>
+      <button class="item" onclick="playTip(this)"><span class="ic ic4">😴</span><span><span class="t">午睡半小时有精神</span><div class="d">点击听语音讲解</div></span></button>
+      <button class="bigbtn" onclick="backHome()">返回首页</button>
+    </div>
+  </section>
+
+  <!-- 19 大字阅读·列表 -->
+  <section class="screen" id="s-read" data-back="1">
+    <div class="topbar"><button class="back" onclick="back()">‹ 返回</button><div class="ttl">📰 大字阅读</div></div>
+    <div class="body">
+      <div class="card" style="font-size:17px;font-weight:800;line-height:1.8">字都放得很大,不戴眼镜也能看。点一篇文章试试。</div>
+      <button class="item" onclick="goArticle(0)"><span class="ic ic1">🍂</span><span><span class="t">秋冬养生五个好习惯</span><div class="d">健康养生</div></span><span class="rt">›</span></button>
+      <button class="item" onclick="goArticle(1)"><span class="ic ic2">🛌</span><span><span class="t">晚上睡不好的三个原因</span><div class="d">睡眠健康</div></span><span class="rt">›</span></button>
+      <button class="item" onclick="goArticle(2)"><span class="ic ic4">🍎</span><span><span class="t">老年人一日三餐怎么吃</span><div class="d">饮食营养</div></span><span class="rt">›</span></button>
+    </div>
+  </section>
+
+  <!-- 20 大字阅读·文章 -->
+  <section class="screen" id="s-read-article" data-back="1">
+    <div class="topbar"><button class="back" onclick="back()">‹ 返回</button><div class="ttl" id="artTitle">文章</div></div>
+    <div class="body">
+      <div class="chips" style="justify-content:center">
+        <span class="chip" onclick="artFont(-2)">A− 字小一点</span>
+        <span class="chip" onclick="artFont(2)">A＋ 字大一点</span>
+      </div>
+      <div class="card" id="artBody" style="font-size:21px;line-height:2.1;font-weight:700"></div>
+    </div>
+  </section>
+
+  <!-- 21 设置 -->
+  <section class="screen" id="s-set" data-back="1">
+    <div class="topbar"><button class="back" onclick="back()">‹ 返回</button><div class="ttl">⚙️ 设置</div></div>
+    <div class="body">
+      <div style="font-size:24px;font-weight:900">字体大小</div>
+      <div class="chips" id="fontChips">
+        <span class="chip sel" onclick="pickFont(this,1)">标准</span>
+        <span class="chip" onclick="pickFont(this,1.18)">加大</span>
+        <span class="chip" onclick="pickFont(this,1.36)">特大</span>
+      </div>
+      <div style="font-size:16px;color:var(--sub);line-height:1.8">选择后立即生效。字小了看不清,建议选「加大」或「特大」。</div>
+      <div class="card" style="display:flex;align-items:center;gap:14px">
+        <span style="font-size:22px;font-weight:900;flex:1">语音播报声音</span>
+        <button class="chip" id="soundChip" onclick="toggleSound()" style="min-width:110px;justify-content:center">已开启</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 22 关于 -->
+  <section class="screen" id="s-about" data-back="1">
+    <div class="topbar"><button class="back" onclick="back()">‹ 返回</button><div class="ttl">关于软件</div></div>
+    <div class="body" style="justify-content:center;text-align:center;gap:16px">
+      <div style="font-size:76px">🌅</div>
+      <div style="font-size:26px;font-weight:900">暖阳</div>
+      <div style="font-size:18px;color:var(--sub)">老年人智能伴侣 · 版本 1.0.0</div>
+      <div class="card" style="font-size:18px;font-weight:700;line-height:2;text-align:left">本软件为课程作业原型演示:<br>· 语音、天气、健康知识均为预设模拟<br>· 未接入真实人工智能服务<br>· 设计采用大字体大按钮、长按防误触、二次确认,适配老年人使用习惯</div>
+    </div>
+  </section>
+
+</div>
+<script>
+/* ===== 状态与导航 ===== */
+const $=id=>document.getElementById(id);
+const state={bp:[
+    {date:'2026-11-18 07:30',sys:125,dia:80},
+    {date:'2026-11-17 07:40',sys:132,dia:85}],
+  meds:[false,false,false], bpTmp:{stage:'sys',sys:'',dia:''},
+  contacts:[{name:'王丽',rel:'女儿',tel:'13800000000'}],
+  voiceTarget:'weather', sound:true, artIdx:0};
+const MEDS=[['早上 · 8:00','降压药 · 1 片'],['中午 · 12:00','钙片 · 1 粒'],['晚上 · 20:00','降脂药 · 1 片']];
+const ARTICLES=[
+  ['秋冬养生五个好习惯','一、早睡晚起。冬天日照短,晚上 10 点前睡觉,早上等太阳出来再起床,身体更暖和。\n二、多喝温水。每天喝 6 杯温水,不要等口渴了才喝。\n三、注意保暖。出门戴好帽子围巾,护住头和脖子。\n四、适度活动。晴天午后出门晒晒太阳、慢慢散步 20 分钟。\n五、保持好心情。多和家人朋友聊天,心情好比吃什么补品都强。'],
+  ['晚上睡不好的三个原因','原因一:白天活动太少。白天坐久了不活动,晚上就不觉得累。\n原因二:睡前看手机。手机的光会让大脑兴奋,越看越精神。\n原因三:晚饭吃得太晚太饱。胃里不舒服,自然睡不踏实。\n建议:晚饭在 7 点前吃完,睡前 1 小时放下手机,用热水泡泡脚,听点舒缓的声音,很快就能睡着。'],
+  ['老年人一日三餐怎么吃','早餐吃好:一个鸡蛋、一碗杂粮粥、一杯牛奶,再加点青菜。\n午餐吃饱:一拳头米饭,配上鱼、肉、豆腐和两种蔬菜。\n晚餐吃少:吃得清淡一点,七分饱就停筷子。\n另外:少油少盐,每天盐不超过一个啤酒瓶盖;水果放在两餐之间吃;吃饭要细嚼慢咽,每口嚼 20 下。']];
+let cur='welcome', hist=[], sosTimer=null, sosT=0, listenTimer=null;
+
+function activate(id){
+  if(id!=='sos'){ if(sosTimer){clearInterval(sosTimer);sosTimer=null;} sosT=0; }
+  if(id!=='voice-listen'){ if(listenTimer){clearTimeout(listenTimer);listenTimer=null;} }
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const el=$('s-'+id); el.classList.add('active');
+  cur=id; el.scrollTop=0;
+  if(id==='home') renderHome();
+  if(id==='health') renderHealth();
+  if(id==='health-list') renderBpList();
+  if(id==='medbox') renderMedbox();
+  if(id==='contact') renderContacts();
+  if(id==='read-article') renderArticle();
+}
+function go(id){ if(id!==cur) hist.push(cur); activate(id); }
+function back(){ if(hist.length) activate(hist.pop()); else activate('home'); }
+function tabHome(){ hist=[]; activate('home'); }
+function backHome(){ hist=[]; activate('home'); }
+function bubble(txt){
+  const b=document.createElement('div'); b.className='bubble'; b.textContent=txt;
+  document.querySelector('.phone').appendChild(b);
+  requestAnimationFrame(()=>b.classList.add('show'));
+  setTimeout(()=>{b.classList.remove('show'); setTimeout(()=>b.remove(),350);},2500);
+}
+function pad(n){ return (n<10?'0':'')+n; }
+
+/* ===== 首页 ===== */
+function renderHome(){
+  const d=new Date(), wd=['日','一','二','三','四','五','六'][d.getDay()];
+  $('greet').textContent='您好!今天是 '+(d.getMonth()+1)+'月'+d.getDate()+'日 星期'+wd;
+  $('sbTime').textContent=pad(d.getHours())+':'+pad(d.getMinutes());
+}
+
+/* ===== 健康记录 ===== */
+function bpJudge(s,d){
+  if(s<90||d<60) return ['偏低','多休息,注意补充营养'];
+  if(s>=140||d>=90) return ['偏高','注意休息,必要时咨询医生'];
+  return ['正常','保持得很好!'];
+}
+function renderHealth(){
+  const r=state.bp[state.bp.length-1];
+  const j=bpJudge(r.sys,r.dia);
+  $('bpVal').textContent=r.sys+' / '+r.dia;
+  $('bpDate').textContent=r.date+' 记录';
+  const st=$('bpStatus'); st.textContent=j[0];
+  st.style.borderColor=j[0]==='正常'?'var(--ok)':'var(--danger)';
+  st.style.background=j[0]==='正常'?'#E7F3EA':'#FBE3E0';
+  st.style.color=j[0]==='正常'?'var(--ok)':'var(--danger)';
+  $('bpCount').textContent=state.bp.length+' 次';
+}
+function startBp(){
+  state.bpTmp={stage:'sys',sys:'',dia:''};
+  $('bpStep').textContent='高压'; $('bpStepLabel').textContent='请输入高压(收缩压)';
+  $('bpInput').textContent='--';
+  activate('health-input');
+}
+function bpKey(k){
+  const t=state.bpTmp, v=t.stage==='sys'?t.sys:t.dia;
+  let nv=v;
+  if(k==='⌫') nv=v.slice(0,-1);
+  else if(nv.length<3) nv=v+k;
+  if(t.stage==='sys') t.sys=nv; else t.dia=nv;
+  $('bpInput').textContent=nv||'--';
+}
+function bpOk(){
+  const t=state.bpTmp;
+  const v=t.stage==='sys'?t.sys:t.dia;
+  if(v.length<2){ bubble('请输满两位数'); return; }
+  if(t.stage==='sys'){
+    t.stage='dia';
+    $('bpStep').textContent='低压'; $('bpStepLabel').textContent='请输入低压(舒张压)';
+    $('bpInput').textContent='--';
+  } else {
+    const d=new Date();
+    const now=(d.getMonth()+1)+'月'+d.getDate()+'日 '+pad(d.getHours())+':'+pad(d.getMinutes());
+    const sys=parseInt(t.sys), dia=parseInt(t.dia);
+    if(dia>=sys){ bubble('低压应该比高压小,请重新输入'); startBp(); return; }
+    state.bp.push({date:now,sys:sys,dia:dia});
+    const j=bpJudge(sys,dia);
+    $('bpDoneSum').innerHTML='<b>高压 '+sys+' / 低压 '+dia+'</b><br>血压情况:<b>'+j[0]+'</b><br>建议:'+j[1];
+    hist=[]; activate('health-done');
+  }
+}
+function goHealthList(){ hist=['home','health']; activate('health-list'); }
+function renderBpList(){
+  $('listCnt').textContent=state.bp.length+' 条';
+  const box=$('bpItems');
+  box.innerHTML=state.bp.slice().reverse().map(r=>{
+    const j=bpJudge(r.sys,r.dia);
+    const c=j[0]==='正常'?'var(--ok)':'var(--danger)';
+    return '<div class="item"><span class="ic" style="background:'+(j[0]==='正常'?'#E7F3EA':'#FBE3E0')+'">❤️</span>'
+      +'<span><span class="t">'+r.sys+' / '+r.dia+'</span><div class="d">'+r.date+'</div></span>'
+      +'<span class="rt" style="color:'+c+';font-size:17px">'+j[0]+'</span></div>';
+  }).join('');
+}
+
+/* ===== 吃药提醒 ===== */
+function renderMedbox(){
+  const n=state.meds.filter(Boolean).length;
+  $('medCount').textContent=n+'/3';
+  state.meds.forEach((m,i)=>{
+    $('med'+i).style.opacity=m?'.55':'1';
+    $('medRt'+i).textContent=m?'✅':'☐';
+  });
+}
+function tapMed(i){
+  if(state.meds[i]) return;
+  state.meds[i]=true;
+  const m=MEDS[i];
+  $('medDoneTt').textContent='打卡成功!';
+  $('medDoneSum').textContent=m[0]+' 的 '+m[1]+' 已服用 ✅';
+  renderMedbox();
+  hist=['home','medbox'];
+  activate('med-done');
+  if(state.meds.every(Boolean)) setTimeout(()=>bubble('今天三次药都吃啦,真棒!🎉'),600);
+}
+
+/* ===== 一键求助 ===== */
+function renderContacts(){
+  const box=$('ctItems');
+  box.innerHTML=state.contacts.map(c=>{
+    const em=c.rel==='女儿'?'👩':(c.rel==='儿子'?'👦':(c.rel==='老伴'?'🧓':'👤'));
+    return '<div class="item"><span class="ic ic1">'+em+'</span>'
+      +'<span><span class="t">'+c.name+'('+c.rel+')</span><div class="d">'+c.tel+'</div></span></div>';
+  }).join('')||'<div class="card" style="text-align:center;font-size:17px;color:var(--sub)">还没有联系人,点下面按钮添加</div>';
+}
+function saveContact(){
+  const n=($('ctName').value||'').trim(), r=($('ctRel').value||'').trim(), t=($('ctTel').value||'').trim();
+  if(!n){ bubble('请填写姓名'); return; }
+  state.contacts.push({name:n,rel:r||'家人',tel:t||'未填写电话'});
+  $('ctName').value='';$('ctRel').value='';$('ctTel').value='';
+  bubble('联系人已保存');
+  hist=['home','sos']; activate('contact');
+}
+function sosDown(){
+  if(sosTimer) return;
+  sosTimer=setInterval(()=>{
+    sosT+=33;
+    const p=Math.min(sosT/30,100);
+    $('sosBtn').style.setProperty('--p',p);
+    if(p>=100) sosReady();
+  },33);
+}
+function sosUp(){
+  if(sosTimer){clearInterval(sosTimer);sosTimer=null;}
+  if(sosT>0&&sosT<3000) bubble('请按住 3 秒,不要松手');
+  sosT=0;
+  setTimeout(()=>$('sosBtn')&&$('sosBtn').style.setProperty('--p',0),50);
+}
+function sosReady(){
+  clearInterval(sosTimer); sosTimer=null; sosT=0;
+  const c=state.contacts[0];
+  $('sosContact').textContent=c?('将联系:'+c.name+'('+c.rel+') '+c.tel):'还没有设置紧急联系人';
+  hist=['home']; activate('sos-confirm');
+}
+function sosGo(){
+  const c=state.contacts[0]; let s=0;
+  $('sosActiveContact').textContent=c?(c.name+'('+c.rel+') · '+c.tel):'紧急联系人';
+  $('sosSec').textContent='00';
+  activate('sos-active');
+  sosTimer=setInterval(()=>{ s++;
+    if($('sosSec')) $('sosSec').textContent=pad(s); },1000);
+}
+function sosCancel(){
+  if(sosTimer){clearInterval(sosTimer);sosTimer=null;}
+  bubble('求助已取消');
+  hist=['home']; activate('sos');
+}
+
+/* ===== 语音陪伴 ===== */
+function listen(t){
+  state.voiceTarget=t||'weather';
+  $('listenTxt').textContent=t==='tips'?'正在聆听:请说"健康小知识"':'正在聆听:请说"查天气"';
+  hist=['home','voice']; activate('voice-listen');
+  listenTimer=setTimeout(()=>{ activate(t==='tips'?'voice-tips':'voice-weather'); },2600);
+}
+function playTip(el){
+  document.querySelectorAll('#s-voice-tips .item').forEach(i=>i.style.background='#fff');
+  el.style.background='#E7F3EA';
+  bubble('🔊 正在讲解:'+el.querySelector('.t').textContent);
+}
+
+/* ===== 大字阅读 ===== */
+function goArticle(i){
+  state.artIdx=i;
+  hist.push('read');
+  activate('read-article');
+}
+function renderArticle(){
+  const a=ARTICLES[state.artIdx];
+  $('artTitle').textContent=a[0];
+  $('artBody').innerHTML=a[1].replace(/\n/g,'<br>');
+  $('artBody').style.fontSize='21px';
+}
+function artFont(d){
+  const el=$('artBody');
+  const cur=parseFloat(el.style.fontSize)||21;
+  el.style.fontSize=Math.min(34,Math.max(17,cur+d))+'px';
+}
+
+/* ===== 设置 / 关于 ===== */
+function pickFont(el,z){
+  document.querySelectorAll('#fontChips .chip').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+  document.getElementById('phone').style.zoom=z;
+  bubble('字体已调大');
+}
+function toggleSound(){
+  state.sound=!state.sound;
+  $('soundChip').textContent=state.sound?'已开启':'已关闭';
+  bubble(state.sound?'声音已开启':'声音已关闭');
+}
+
+/* ===== 启动 ===== */
+renderHome(); renderHealth(); renderMedbox(); renderContacts();
+activate('welcome');
+</script>
+</body>
+</html>
